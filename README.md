@@ -1,7 +1,7 @@
 ## RA_Project
 Investigations into the Prediction of Patient Response to Rheumatoid Arthritis Treatment.
 
-## Local Installation 
+## Local Installation the Virtual Enviroment 
 1. Clone the [RA_Project repository](https://github.com/Yiqing-Zhu2000/RA_Project) and open it
 ```
 git clone git@github.com:Yiqing-Zhu2000/RA_Project.git
