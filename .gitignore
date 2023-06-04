@@ -1,9 +1,6 @@
 .venv/
 LD_chr22_training/
-output/
-RA_antiTNF/
 temp/
-temp_check/
 test_plink/
 TestDataProcessed/
-LD_chr22_training copy/
+data/*
