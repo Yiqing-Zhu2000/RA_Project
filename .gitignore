@@ -1,6 +1,10 @@
 .venv/
 LD_chr22_training/
-temp/
+sample_clinicalData/
 test_plink/
 TestDataProcessed/
+
+# training data is too big to include
 data/*
+!data/utils/
+temp/*

@@ -23,3 +23,6 @@ on your machine. In this case, we call it `env`:
 ```
 pip3 install -r requirements.txt
 ```
+
+## Deal with the data
+
