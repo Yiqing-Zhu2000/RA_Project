@@ -7,6 +7,7 @@ dream1_Gwas_result/
 deam1_LD_plinkTOzarr/
 qced_genotype_out/   
 CMdream1/
+CMdream2/
 Toy_example_expr/
 
 # the output file is used to test some examples in mgp's readme
