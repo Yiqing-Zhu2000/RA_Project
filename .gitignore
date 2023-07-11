@@ -22,3 +22,4 @@ CMAll_qced/*
 data/*
 !data/utils/
 temp/
+ELBO_history_fig/
