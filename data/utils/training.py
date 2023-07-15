@@ -5,10 +5,11 @@ import viprs as vp
 from viprs.eval.metrics import r2 
 import matplotlib.pyplot as plt
 
-def ELBO_plot(ELBO_list, save_path):
+def ELBO_plot(ELBO_list, save_path, itr):
     """
     params: a ELBO_list from the fitted viprs model v.history['ELBO']
     params: the abs./relative pathway end with .png 
+    params: the itr " th" time that training again 
     """
     num = len(ELBO_list)
     plt.figure()
@@ -16,17 +17,17 @@ def ELBO_plot(ELBO_list, save_path):
     plt.grid(which="major",alpha=0.3)
     plt.xlabel("Iteration")
     plt.ylabel("ELBO")
-    plt.title("Evidence lower bound as a function of EM iteration")
+    plt.title("Evidence lower bound as a function of EM outer itr " + str(itr) + "th")
     plt.savefig(save_path)
-    # plt.show()
+    plt.show()
 
 #simulate 2706 samples on 100 SNPs
 def train_chr22_100SNPs():
     g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_100snps",
-                            pi = [.99, .01],
+                            pi = [.95, .05],
                             h2=0.5)
     g_sim.simulate()
-    g_sim.to_phenotype_table()
+    g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.csv",sep='\t')
     # calculate gwas
     g_sim.perform_gwas()
     g_sim.to_summary_statistics_table().to_csv(
@@ -53,11 +54,17 @@ def train_chr22_100SNPs():
     # g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.txt",sep='\t', index=False)
     val_prs = v.predict(gdl_sim)
     return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO']
-    
+
+def plot_obs_vs_pred(x_obs, y_pred):
+    plt.scatter(x_obs,y_pred)
+    plt.xlabel('observed phenotype')
+    plt.ylabel('predict phenotype')
+    plt.title("Relation between obs.& predict phe")
+    plt.show()
     
 def train_chr22_100SNPs_addCov():
     g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_100snps",
-                                pi = [.99, .01],
+                                pi = [.95, .05],
                                 h2=0.5)
     g_sim.simulate()
     g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.csv",sep='\t')
@@ -82,7 +89,38 @@ def train_chr22_100SNPs_addCov():
     v.fit()
     val_prs = v.predict(gdl_sim)
     return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO']
- 
+
+def fixed_beta_100SNPs():
+    beta100np = np.zeros(100)
+    beta100np[20] = 0.5     # rs11090428
+    beta100 = {22: beta100np}
+    g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_100snps",
+                            pi = [.99, .01],
+                            h2=0.5)
+    g_sim.set_beta(beta100)
+    g_sim.simulate(reset_beta=False)
+    g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.csv",sep='\t')
+    # calculate gwas
+    g_sim.perform_gwas()
+    g_sim.to_summary_statistics_table().to_csv(
+        "Toy_example_expr/shuffle_100snps.sumstats", sep="\t", index=False
+    )
+    # Load summary statistics（simulate phenotype from above) and match them with perviously
+    gdl_sim = mgp.GWADataLoader(bed_files="CMAll_qced/chr22/shuffle_100snps",
+                                sumstats_files="Toy_example_expr/shuffle_100snps.sumstats",
+                                sumstats_format="magenpy")
+    # calculate LD
+    gdl_sim.compute_ld(estimator='sample',
+                        output_dir='Toy_example_expr/shuffle100_chr22_out/')
+    # viprs
+    v = vp.VIPRS(gdl_sim, fix_params={'pi': 0.001, 'sigma_epsilon': 0.999}) 
+    v.fit()
+
+    # predict on the same dataset directly 
+    # g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.txt",sep='\t', index=False)
+    val_prs = v.predict(gdl_sim)
+    return r2(val_prs, g_sim.sample_table.phenotype),v.history['ELBO'],val_prs,g_sim.sample_table.phenotype
+    
 
 #simulate 2706 samples
 # this function haven't been tested.
