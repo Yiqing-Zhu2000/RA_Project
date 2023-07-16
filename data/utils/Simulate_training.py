@@ -121,6 +121,39 @@ def fixed_beta_100SNPs():
     val_prs = v.predict(gdl_sim)
     return r2(val_prs, g_sim.sample_table.phenotype),v.history['ELBO'],val_prs,g_sim.sample_table.phenotype
     
+def fixed_beta_500Variants():
+    beta500np = np.zeros(500)
+    beta500np[0:2] = 0.2     # rs11090428
+    beta500np[2:6] = 0.1/3
+    beta500 = {22: beta500np}
+    g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_500snps",
+                            pi = [.99, .01],
+                            h2=0.5)
+    g_sim.set_beta(beta500)
+    g_sim.simulate(reset_beta=False)
+    # g_sim.simulate()
+    g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle500_phe.csv",sep='\t')
+    # calculate gwas
+    g_sim.perform_gwas()
+    g_sim.to_summary_statistics_table().to_csv(
+        "Toy_example_expr/shuffle_500snps.sumstats", sep="\t", index=False
+    )
+    # Load summary statistics（simulate phenotype from above) and match them with perviously
+    gdl_sim = mgp.GWADataLoader(bed_files="CMAll_qced/chr22/shuffle_500snps",
+                                sumstats_files="Toy_example_expr/shuffle_500snps.sumstats",
+                                sumstats_format="magenpy")
+    # calculate LD
+    gdl_sim.compute_ld(estimator='sample',
+                        output_dir='Toy_example_expr/shuffle500_chr22_out/')
+    # viprs
+    v = vp.VIPRS(gdl_sim, fix_params={'pi': 0.001, 'sigma_epsilon': 0.999}) 
+    v.fit()
+
+    # predict on the same dataset directly 
+    # g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/shuffle100_phe.txt",sep='\t', index=False)
+    val_prs = v.predict(gdl_sim)
+    return r2(val_prs, g_sim.sample_table.phenotype),v.history['ELBO'],val_prs,g_sim.sample_table.phenotype
+
 
 #simulate 2706 samples
 # this function haven't been tested.
