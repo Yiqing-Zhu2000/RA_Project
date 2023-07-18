@@ -123,8 +123,8 @@ def fixed_beta_100SNPs():
     
 def fixed_beta_500Variants():
     beta500np = np.zeros(500)
-    beta500np[0:2] = 0.2     # rs11090428
-    beta500np[2:6] = 0.1/3
+    beta500np[0:2] = 0.5     # rs11090428
+    beta500np[2:6] = -0.5
     beta500 = {22: beta500np}
     g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_500snps",
                             pi = [.99, .01],
@@ -147,6 +147,7 @@ def fixed_beta_500Variants():
                         output_dir='Toy_example_expr/shuffle500_chr22_out/')
     # viprs
     v = vp.VIPRS(gdl_sim, fix_params={'pi': 0.001, 'sigma_epsilon': 0.999}) 
+    # v = vp.VIPRS(gdl_sim, fix_params={'pi': 0.998000, 'sigma_epsilon': 0.750000}) 
     v.fit()
 
     # predict on the same dataset directly 
