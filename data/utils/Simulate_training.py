@@ -5,6 +5,13 @@ import viprs as vp
 from viprs.eval.metrics import r2 
 import matplotlib.pyplot as plt
 
+def plot_obs_vs_pred(y_obs, x_pred):
+    plt.scatter(x_pred, y_obs)
+    plt.xlabel('predict phenotype')
+    plt.ylabel('observed(real) phenotype')
+    plt.title("Relation between obs.(real)& predict phe")
+    plt.show()
+
 def ELBO_plot(ELBO_list, save_path, itr):
     """
     params: a ELBO_list from the fitted viprs model v.history['ELBO']
@@ -55,12 +62,6 @@ def train_chr22_100SNPs():
     val_prs = v.predict(gdl_sim)
     return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO']
 
-def plot_obs_vs_pred(x_obs, y_pred):
-    plt.scatter(x_obs,y_pred)
-    plt.xlabel('observed phenotype')
-    plt.ylabel('predict phenotype')
-    plt.title("Relation between obs.& predict phe")
-    plt.show()
     
 def train_chr22_100SNPs_addCov():
     g_sim = mgp.GWASimulator("CMAll_qced/chr22/shuffle_100snps",
@@ -191,3 +192,35 @@ def train_chr22ALL():
     val_prs = v.predict(gdl_sim)
     return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO']
 
+def train_506_chr22():
+    g_sim = mgp.GWASimulator("CMAll_qced/chr22/Selected_1000snps",
+                            pi = [.99, .01],
+                            h2=0.5)
+    g_sim.simulate()
+    g_sim.to_phenotype_table()
+    # calculate gwas
+    g_sim.perform_gwas()
+    g_sim.to_summary_statistics_table().to_csv(
+        "Toy_example_expr/selected506.sumstats", sep="\t", index=False
+    )
+    # Load summary statistics（simulate phenotype from above) and match them with perviously
+    gdl_sim = mgp.GWADataLoader(bed_files="CMAll_qced/chr22/Selected_1000snps",
+                                sumstats_files="Toy_example_expr/selected506.sumstats",
+                                sumstats_format="magenpy")
+    # calculate LD
+    gdl_sim.compute_ld(estimator='sample',
+                    output_dir='Toy_example_expr/selected506_22_out/')
+
+    # gdl_sim.compute_ld(estimator='windowed',
+    #                    output_dir='Toy_example_expr/ALLchr22_out/windowed/',
+    #                    window_size=100)
+    
+    # training
+    # viprs
+    v = vp.VIPRS(gdl_sim, fix_params={'pi': 0.001, 'sigma_epsilon': 0.999}) 
+    v.fit()
+    
+    # predict on the same dataset directly 
+    g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/selected506_22_phe.txt",sep='\t', index=False)
+    val_prs = v.predict(gdl_sim)
+    return r2(val_prs, g_sim.sample_table.phenotype),v.history['ELBO'],val_prs,g_sim.sample_table.phenotype
