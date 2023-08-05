@@ -190,7 +190,7 @@ def train_chr22ALL():
     # predict on the same dataset directly 
     g_sim.to_phenotype_table().to_csv("Toy_example_expr/phenotype/chr22ALL_phe.txt",sep='\t', index=False)
     val_prs = v.predict(gdl_sim)
-    return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO']
+    return r2(val_prs, g_sim.sample_table.phenotype), v.history['ELBO'],g_sim.sample_table.phenotype, val_prs
 
 def train_506_chr22():
     g_sim = mgp.GWASimulator("CMAll_qced/chr22/Selected_1000snps",
