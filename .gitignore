@@ -26,3 +26,4 @@ temp/
 ELBO_history_fig/
 Real_phe_expr/
 CCanada_Run/merge10.sumstats
+CCanada_Run/merge10CM.sumstats
