@@ -21,6 +21,8 @@ CMAll_qced/*
 # training data is too big to include
 data/*
 !data/utils/
+!data/phenotype_data/
 temp/
 ELBO_history_fig/
 Real_phe_expr/
+CCanada_Run/merge10.sumstats
